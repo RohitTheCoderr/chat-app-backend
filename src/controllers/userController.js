@@ -345,6 +345,51 @@ const updateProfile = async (req, res) => {
   }
 };
 
+const deleteAvatar=async(req, res)=>{
+  try {
+    const user = await User.findById(req.user._id);
+    
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const publicId = user.avatar?.publicId;
+
+    if (!publicId) {
+      return res.status(400).json({
+        success: false,
+        message: "No avatar to delete",
+      });
+    }
+
+    // Delete avatar from Cloudinary
+    const result = await cloudinary.uploader.destroy(publicId);
+
+    if (result.result !== "ok") {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to delete avatar from Cloudinary",
+      });
+    }
+
+    // Remove avatar reference from user document
+    user.avatar = undefined;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Avatar deleted successfully",
+    });
+    
+  } catch (error) {
+    res.status(500).json({success:false, message:"Failed to delete avatar"});
+  }
+}
+
 const checkUsername = async (req, res) => {
   try {
     const { username } = req.query;
@@ -401,4 +446,5 @@ export {
   createProfile,
   updateProfile,
   checkUsername,
+  deleteAvatar
 };
