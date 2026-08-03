@@ -22,11 +22,15 @@
   "homepage": "https://github.com/RohitTheCoderr/chat-app-backend#readme",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "cloudinary": "^1.41.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.9.1",
+    "multer": "^2.2.0",
+    "multer-storage-cloudinary": "^4.0.0",
+    "nodemailer": "^9.0.3",
     "socket.io": "^4.8.3"
   },
   "devDependencies": {
