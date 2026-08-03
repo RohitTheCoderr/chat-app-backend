@@ -8,6 +8,7 @@ import generateToken from "../services/authService.js";
 import { cloudinary } from "../services/cloudinaryService.js";
 import { sendPasswordResetEmail } from "../services/emailService.js";
 import crypto from "crypto";
+import { hashPassword } from "../services/passwordService.js";
 
 const registerUser = async (req, res) => {
   try {
@@ -129,6 +130,7 @@ const forgetPassword = async (req, res) => {
     });
 
   } catch (error) {
+    console.error("Forget Password Error:", error);
     return res.status(500).json({
       success: false,
       message: error.message ||"Failed to process password reset request",
@@ -176,19 +178,6 @@ const forgetPassword = async (req, res) => {
       });
     }
 
-    // Check new password is not same as old password
-    const isSamePassword = await verifyPassword(
-      newPassword,
-      user.password
-    );
-
-    if (isSamePassword) {
-      return res.status(400).json({
-        success: false,
-        message: "New password cannot be same as old password",
-      });
-    }
-
     // Hash new password
     const hashedPassword = await hashPassword(
       newPassword
@@ -209,7 +198,6 @@ const forgetPassword = async (req, res) => {
 
   } catch (error) {
     console.error("Reset Password Error:", error);
-
     return res.status(500).json({
       success: false,
       message:
