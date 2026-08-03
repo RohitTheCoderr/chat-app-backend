@@ -1,28 +1,27 @@
 import express from "express";
-
-import 
- { registerUser, checkUsername}
- from "../controllers/userController.js";
-
+import {
+  registerUser,
+  loginUser,
+  checkUsername,
+  resetPassword,
+  forgetPassword,
+} from "../controllers/userController.js";
 
 const router = express.Router();
 
 // Check username availability
-router.get(
-  "/check-username",
-  checkUsername
-);
+router.get("/check-username", checkUsername);
 
 // Register new user
 router.post("/register", registerUser);
 
-// // Login user
-// router.post("/login", login);
+// Login user
+router.post("/login", loginUser);
 
-// // Logout user
-// router.post("/logout", authMiddleware, logout);
+// forget password
+router.post("/forget-password", forgetPassword);
 
-// // Get current logged-in user
-// router.get("/me", authMiddleware, getMe);
+// reset password
+router.post("/reset-password/:token", resetPassword);
 
 export default router;

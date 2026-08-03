@@ -1,23 +1,11 @@
-import bcrypt from "bcrypt";
 import User from "../models/user.js";
-import {hashPassword} from "../services/passwordService.js"
-
+import { hashPassword, verifyPassword } from "./passwordService.js";
 
 const createUser = async (userData) => {
-  const {
-    name,
-    username,
-    email,
-    password,
-  } = userData;
-
-  const normalizedUsername = username
-    .trim()
-    .toLowerCase();
-
-  const normalizedEmail = email
-    .trim()
-    .toLowerCase();
+  const { name, username, email, password } = userData;
+  
+  const normalizedUsername = username.trim().toLowerCase();
+  const normalizedEmail = email.trim().toLowerCase();
 
   const existingUser = await User.findOne({
     $or: [
@@ -32,8 +20,7 @@ const createUser = async (userData) => {
     );
   }
 
-  const hashedPassword =
-    await hashPassword(password);
+const hashedPassword = await hashPassword(password);
 
   const user = await User.create({
     name,
@@ -44,13 +31,69 @@ const createUser = async (userData) => {
   });
 
   const userObject = user.toObject();
-
   delete userObject.password;
 
   return userObject;
 };
 
+const findUserByEmailOrUsername = async (
+  { email, username },
+  includePassword = false
+) => {
+  const normalizedEmail = email?.trim().toLowerCase() || "";
+  const normalizedUsername = username?.trim().toLowerCase() || "";
 
-export {
-  createUser,
+  const query = User.findOne({
+    $or: [
+      { email: normalizedEmail },
+      { username: normalizedUsername },
+    ],
+  });
+
+  if (includePassword) {
+    query.select("+password");
+  }
+
+  return query;
 };
+
+// const findUserByEmailOrUsername = async (
+//   { email, username },
+//   includePassword = false
+// ) => {
+//   const normalizedEmail =
+//     email?.trim().toLowerCase();
+
+//   const normalizedUsername =
+//     username?.trim().toLowerCase();
+
+//   const conditions = [];
+
+//   if (normalizedEmail) {
+//     conditions.push({
+//       email: normalizedEmail,
+//     });
+//   }
+
+//   if (normalizedUsername) {
+//     conditions.push({
+//       username: normalizedUsername,
+//     });
+//   }
+
+//   if (conditions.length === 0) {
+//     return null;
+//   }
+
+//   const query = User.findOne({
+//     $or: conditions,
+//   });
+
+//   if (includePassword) {
+//     query.select("+password");
+//   }
+
+//   return query;
+// };
+
+export { createUser, findUserByEmailOrUsername, verifyPassword };

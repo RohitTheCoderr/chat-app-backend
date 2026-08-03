@@ -1,32 +1,24 @@
 import bcrypt from "bcrypt";
 
-const SALT = Number(process.env.SALT_ROUNDS)
+const SALT = Number(process.env.SALT_ROUNDS) || 12;
 
- const hashPassword = async (password) => {
+const hashPassword = async (password) => {
   try {
     const salt = await bcrypt.genSalt(SALT);
-
-    const hashedPassword = await bcrypt.hash(
-      password,
-      salt
-    );
-
-    return hashedPassword;
+    return await bcrypt.hash(password, salt);
   } catch (error) {
     console.error("Password hashing failed:", error);
-
     throw new Error("Failed to hash password");
   }
 };
 
- const comparePassword = async (
-  password,
-  hashedPassword
-) => {
-  return await bcrypt.compare(
-    password,
-    hashedPassword
-  );
+const verifyPassword = async (password, hashedPassword) => {
+  try {
+    return await bcrypt.compare(password, hashedPassword);
+  } catch (error) {
+    console.error("Password verification failed:", error);
+    throw new Error("Failed to verify password");
+  }
 };
 
-export {hashPassword, comparePassword}
+export { hashPassword, verifyPassword };

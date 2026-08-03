@@ -19,7 +19,7 @@ const protect = async (req, res, next) => {
       process.env.JWT_SECRET_KEY
     );
 
-    const user = await User.findById(decoded.id).select(
+    const user = await User.findById(decoded.userId).select(
       "-password"
     );
 
