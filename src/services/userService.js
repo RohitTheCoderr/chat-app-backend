@@ -57,43 +57,5 @@ const findUserByEmailOrUsername = async (
   return query;
 };
 
-// const findUserByEmailOrUsername = async (
-//   { email, username },
-//   includePassword = false
-// ) => {
-//   const normalizedEmail =
-//     email?.trim().toLowerCase();
-
-//   const normalizedUsername =
-//     username?.trim().toLowerCase();
-
-//   const conditions = [];
-
-//   if (normalizedEmail) {
-//     conditions.push({
-//       email: normalizedEmail,
-//     });
-//   }
-
-//   if (normalizedUsername) {
-//     conditions.push({
-//       username: normalizedUsername,
-//     });
-//   }
-
-//   if (conditions.length === 0) {
-//     return null;
-//   }
-
-//   const query = User.findOne({
-//     $or: conditions,
-//   });
-
-//   if (includePassword) {
-//     query.select("+password");
-//   }
-
-//   return query;
-// };
 
 export { createUser, findUserByEmailOrUsername, verifyPassword };
