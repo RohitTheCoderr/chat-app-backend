@@ -208,9 +208,15 @@ const forgetPassword = async (req, res) => {
 };
 
 const getCurrentUser = async (req, res) => {
+  const {_id, username, name, email, bio, phone, avatar, friends, blockedUsers } = req.user;
+
+  const FriendsCount= friends ? friends.length : 0;
+  const BlockedUsersCount= blockedUsers ? blockedUsers.length : 0;
+  const avatarUrl = avatar?.url || null;
+
   return res.status(200).json({
     success: true,
-    data: req.user,
+    data: { _id, username, name, email, bio, phone, avatar: avatarUrl, FriendsCount, BlockedUsersCount },
   });
 };
 
