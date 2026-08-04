@@ -1,6 +1,6 @@
-import express from "express"
-import { getFriendRequests, sendFriendRequest } from "../controllers/friendController"
-import protect from "../middleware/authMiddleware"
+import express from "express";
+import { acceptFriendRequest, declineFriendRequest, getFriendRequests, sendFriendRequest, cancelFriendRequest } from "../controllers/friendController.js";
+import protect from "../middleware/authMiddleware.js";
 
 const router=express.Router()
 

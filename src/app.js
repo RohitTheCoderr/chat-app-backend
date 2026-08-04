@@ -42,21 +42,4 @@ app.use("/api/friends", friendRoutes);
 //   notificationRoutes
 // );
 
-
-// =========================
-// HEALTH CHECK
-// =========================
-
-app.get("/api/health", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Chat App API is running",
-  });
-});
-
-
-// =========================
-// EXPORT APP
-// =========================
-
 export default app;
