@@ -8,7 +8,6 @@ const connectDB = async () => {
     return;
   }
 
-  
   try {
     await mongoose.connect(mongoURI, {
       serverSelectionTimeoutMS: 5000,
@@ -26,4 +25,4 @@ mongoose.connection.on("disconnected", () => {
   connectDB();
 });
 
-export default connectDB
+export default connectDB;

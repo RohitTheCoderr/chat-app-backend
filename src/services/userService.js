@@ -3,24 +3,19 @@ import { hashPassword, verifyPassword } from "./passwordService.js";
 
 const createUser = async (userData) => {
   const { name, username, email, password } = userData;
-  
+
   const normalizedUsername = username.trim().toLowerCase();
   const normalizedEmail = email.trim().toLowerCase();
 
   const existingUser = await User.findOne({
-    $or: [
-      { email: normalizedEmail },
-      { username: normalizedUsername },
-    ],
+    $or: [{ email: normalizedEmail }, { username: normalizedUsername }],
   });
 
   if (existingUser) {
-    throw new Error(
-      "User with this email or username already exists"
-    );
+    throw new Error("User with this email or username already exists");
   }
 
-const hashedPassword = await hashPassword(password);
+  const hashedPassword = await hashPassword(password);
 
   const user = await User.create({
     name,
@@ -38,16 +33,13 @@ const hashedPassword = await hashPassword(password);
 
 const findUserByEmailOrUsername = async (
   { email, username },
-  includePassword = false
+  includePassword = false,
 ) => {
   const normalizedEmail = email?.trim().toLowerCase() || "";
   const normalizedUsername = username?.trim().toLowerCase() || "";
 
   const query = User.findOne({
-    $or: [
-      { email: normalizedEmail },
-      { username: normalizedUsername },
-    ],
+    $or: [{ email: normalizedEmail }, { username: normalizedUsername }],
   });
 
   if (includePassword) {
@@ -56,6 +48,5 @@ const findUserByEmailOrUsername = async (
 
   return query;
 };
-
 
 export { createUser, findUserByEmailOrUsername, verifyPassword };

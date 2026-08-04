@@ -8,7 +8,7 @@ const generateToken = (userId) => {
     process.env.JWT_SECRET_KEY,
     {
       expiresIn: "7d",
-    }
+    },
   );
 };
 

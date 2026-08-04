@@ -13,7 +13,6 @@ const app = express();
 
 app.use(express.json());
 
-
 // =========================
 // ROUTES
 // =========================
@@ -21,6 +20,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/friends", friendRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // app.use(
 //   "/api/admin-requests",
@@ -35,11 +35,6 @@ app.use("/api/friends", friendRoutes);
 // app.use(
 //   "/api",
 //   messageRoutes
-// );
-
-// app.use(
-//   "/api/notifications",
-//   notificationRoutes
 // );
 
 export default app;
