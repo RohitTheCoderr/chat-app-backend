@@ -323,8 +323,6 @@ const updateProfile = async (req, res) => {
       const result = await cloudinary.uploader.destroy(
         oldAvatarPublicId
       );
-
-      console.log("Old avatar delete result:", result);
     }
 
     const userObject = user.toObject();

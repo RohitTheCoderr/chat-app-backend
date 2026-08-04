@@ -163,4 +163,21 @@ const sendPasswordResetEmail = async (email, name, resetToken) => {
   });
 };
 
-export { sendPasswordResetEmail };
+const sendFriendRequestEmail = async (email, name, senderName) => {
+  await transporter.sendMail({
+    from: `"Chat App" <${process.env.MAIL_USER}>`,
+    to: email,
+    subject: "New Friend Request",
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2>Hello ${name},</h2>
+        <p>You have received a new friend request from <strong>${senderName}</strong>.</p>
+        <p>Log in to your account to accept or decline the request.</p>
+        <a href="${process.env.FRONTEND_URL}/friend-requests" style="display: inline-block; padding: 10px 20px; background-color: #2563eb; color: #ffffff; text-decoration: none; border-radius: 5px;">View Friend Requests</a>
+        <p>If you did not expect this request, you can ignore this email.</p>
+      </div>
+    `,
+  });
+};
+
+export { sendPasswordResetEmail, sendFriendRequestEmail };
