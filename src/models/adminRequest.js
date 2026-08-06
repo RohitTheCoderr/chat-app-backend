@@ -49,10 +49,7 @@ const adminRequestSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-module.exports = mongoose.model(
-  "AdminRequest",
-  adminRequestSchema
-);
+module.exports = mongoose.model("AdminRequest", adminRequestSchema);

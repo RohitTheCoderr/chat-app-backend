@@ -3,6 +3,7 @@ import express from "express";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import friendRoutes from "./routes/friendRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 const app = express();
 
@@ -13,7 +14,6 @@ const app = express();
 
 app.use(express.json());
 
-
 // =========================
 // ROUTES
 // =========================
@@ -21,6 +21,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/friends", friendRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // app.use(
 //   "/api/admin-requests",
@@ -35,11 +36,6 @@ app.use("/api/friends", friendRoutes);
 // app.use(
 //   "/api",
 //   messageRoutes
-// );
-
-// app.use(
-//   "/api/notifications",
-//   notificationRoutes
 // );
 
 export default app;

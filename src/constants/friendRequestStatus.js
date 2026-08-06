@@ -1,0 +1,6 @@
+export const FRIEND_REQUEST_STATUS = Object.freeze({
+  PENDING: "PENDING",
+  ACCEPTED: "ACCEPTED",
+  DECLINED: "DECLINED",
+  CANCELED: "CANCELED",
+});
