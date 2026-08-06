@@ -1,5 +1,6 @@
 import { FRIEND_REQUEST_STATUS } from "../constants/friendRequestStatus.js";
 import { NOTIFICATION_TYPES } from "../constants/notificationTypes.js";
+import Conversations from "../models/conversation.js";
 import FriendRequest from "../models/friendRequest.js";
 import User from "../models/user.js";
 import { sendFriendRequestEmail } from "../services/emailService.js";
@@ -154,21 +155,31 @@ const acceptFriendRequest = async (req, res) => {
     friendRequest.status = FRIEND_REQUEST_STATUS.ACCEPTED;
     await friendRequest.save();
 
-    // notification in app
-    await createNotification({
-      recipientId: userId,
-      type: NOTIFICATION_TYPES.FRIEND_REQUEST_ACCEPTED,
-      message: `${req.user.name} accepted your friend request`,
-      sender: req.user._id,
-      referenceId: friendRequest._id,
-    });
-
     // Add each other as friends
     await User.findByIdAndUpdate(userId, {
       $addToSet: { friends: receiverId },
     });
     await User.findByIdAndUpdate(receiverId, {
       $addToSet: { friends: userId },
+    });
+
+    const existingConversation = await Conversations.findOne({
+      participants: { $all: [userId, receiverId] },
+    });
+
+    if (!existingConversation) {
+      await Conversations.create({
+        participants: [userId, receiverId],
+      });
+    }
+
+    // notification in app Send notification
+    await createNotification({
+      recipientId: userId,
+      type: NOTIFICATION_TYPES.FRIEND_REQUEST_ACCEPTED,
+      message: `${req.user.name} accepted your friend request`,
+      sender: req.user._id,
+      referenceId: friendRequest._id,
     });
 
     res
