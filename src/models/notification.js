@@ -14,10 +14,16 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["FRIEND_REQUEST", "MESSAGE", "MENTION"],
+      enum: [
+        "FRIEND_REQUEST",
+        "FRIEND_REQUEST_ACCEPTED",
+        "NEW_MESSAGE",
+        "MENTION",
+      ],
       required: true,
     },
     referenceId: { type: mongoose.Schema.Types.ObjectId, required: true },
+    message: { type: String, required: true },
     isRead: { type: Boolean, default: false },
   },
   {

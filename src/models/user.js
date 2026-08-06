@@ -53,17 +53,17 @@ const userSchema = new mongoose.Schema(
     // PROFILE
     // =========================
 
-   avatar: {
-        url: {
+    avatar: {
+      url: {
         type: String,
-       default: "",
-       },
- 
-        publicId: {
-      type: String,
-         default: "",
-     },
-     },
+        default: "",
+      },
+
+      publicId: {
+        type: String,
+        default: "",
+      },
+    },
 
     bio: {
       type: String,
@@ -106,18 +106,18 @@ const userSchema = new mongoose.Schema(
     },
 
     // =========================
-// PASSWORD RESET
-// =========================
+    // PASSWORD RESET
+    // =========================
 
-resetPasswordToken: {
-  type: String,
-  default: null,
-},
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
 
-resetPasswordExpires: {
-  type: Date,
-  default: null,
-},
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
+    },
 
     // =========================
     // SOCIAL
@@ -139,7 +139,7 @@ resetPasswordExpires: {
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const User = mongoose.model("User", userSchema);
