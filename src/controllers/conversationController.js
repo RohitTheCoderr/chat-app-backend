@@ -18,8 +18,10 @@ const getAllConversationsForUser = async (req, res) => {
       Conversations.countDocuments({ participants: userId }),
     ]);
 
-    const formattedConversations = conversations.map((conversation) =>
-      formatConversation(conversation, userId),
+    const formattedConversations = await Promise.all(
+      conversations.map((conversation) =>
+        formatConversation(conversation, userId),
+      ),
     );
 
     res.status(200).json({
