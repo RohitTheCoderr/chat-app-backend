@@ -61,9 +61,13 @@ const sendMessage = async (req, res) => {
   }
 };
 
-const receiveMessages = async (req, res) => {
+const getMessages = async (req, res) => {
   try {
     const userId = req.user._id;
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const limit = Math.max(Number(req.query.size) || 1, 1);
+    const skip = (page - 1) * limit;
+
     const conversationId = req.params.conversationId;
 
     if (!conversationId) {
@@ -89,8 +93,10 @@ const receiveMessages = async (req, res) => {
     const messages = await Message.find({
       conversation: conversationId,
     })
-      .populate("sender", "name username avatar.url status")
-      .sort({ createdAt: -1 });
+      .populate("sender", "name username avatar.url status lastSeen")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     return res.status(200).json({
       success: true,
@@ -164,17 +170,19 @@ const getUnreadMessageCount = async (req, res) => {
   try {
     const userId = req.user._id;
 
+    const conversationIds = await Conversations.distinct("_id", {
+      participants: userId,
+    });
+
     const unreadCount = await Message.countDocuments({
+      conversation: {
+        $in: conversationIds,
+      },
       sender: {
         $ne: userId,
       },
       readBy: {
         $ne: userId,
-      },
-      conversation: {
-        $in: await Conversations.find({
-          participants: userId,
-        }).distinct("_id"),
       },
     });
 
@@ -190,9 +198,4 @@ const getUnreadMessageCount = async (req, res) => {
   }
 };
 
-export {
-  sendMessage,
-  receiveMessages,
-  markMessagesAsRead,
-  getUnreadMessageCount,
-};
+export { sendMessage, getMessages, markMessagesAsRead, getUnreadMessageCount };
