@@ -38,10 +38,7 @@ const loginUser = async (req, res) => {
       });
     }
 
-    const user = await findUserByEmailOrUsername(
-      { email, username },
-      true
-    );
+    const user = await findUserByEmailOrUsername({ email, username }, true);
 
     if (!user) {
       return res.status(401).json({
@@ -50,10 +47,7 @@ const loginUser = async (req, res) => {
       });
     }
 
-    const isValidPassword = await verifyPassword(
-      password,
-      user.password
-    );
+    const isValidPassword = await verifyPassword(password, user.password);
 
     if (!isValidPassword) {
       return res.status(401).json({
@@ -84,26 +78,24 @@ const forgetPassword = async (req, res) => {
   try {
     const { username, email } = req.body;
 
-    if(!username && !email) {
+    if (!username && !email) {
       return res.status(400).json({
         success: false,
         message: "Username or email is required",
       });
     }
 
-    const user =await findUserByEmailOrUsername({ username, email }, true);
+    const user = await findUserByEmailOrUsername({ username, email }, true);
 
-    if(!user) {
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
 
-     // Generate raw token
-    const resetToken = crypto
-      .randomBytes(32)
-      .toString("hex");
+    // Generate raw token
+    const resetToken = crypto.randomBytes(32).toString("hex");
 
     // Hash token before saving to DB
     const hashedToken = crypto
@@ -112,33 +104,27 @@ const forgetPassword = async (req, res) => {
       .digest("hex");
 
     user.resetPasswordToken = hashedToken;
-    user.resetPasswordExpires =
-      Date.now() + 15 * 60 * 1000;
+    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
 
     await user.save();
 
-      // Send raw token in email
-    await sendPasswordResetEmail(
-      user.email,
-      user.name,
-      resetToken
-    );
+    // Send raw token in email
+    await sendPasswordResetEmail(user.email, user.name, resetToken);
 
     return res.status(200).json({
       success: true,
       message: "Password reset link sent to your email",
     });
-
   } catch (error) {
     console.error("Forget Password Error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message ||"Failed to process password reset request",
+      message: error.message || "Failed to process password reset request",
     });
-    
-  }}
+  }
+};
 
- const resetPassword = async (req, res) => {
+const resetPassword = async (req, res) => {
   try {
     const { token } = req.params;
     const { newPassword } = req.body;
@@ -158,10 +144,7 @@ const forgetPassword = async (req, res) => {
     }
 
     // Hash token received from URL
-    const hashedToken = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     // Find user with valid token and expiry
     const user = await User.findOne({
@@ -179,9 +162,7 @@ const forgetPassword = async (req, res) => {
     }
 
     // Hash new password
-    const hashedPassword = await hashPassword(
-      newPassword
-    );
+    const hashedPassword = await hashPassword(newPassword);
 
     user.password = hashedPassword;
 
@@ -195,38 +176,51 @@ const forgetPassword = async (req, res) => {
       success: true,
       message: "Password reset successfully",
     });
-
   } catch (error) {
     console.error("Reset Password Error:", error);
     return res.status(500).json({
       success: false,
-      message:
-        error.message ||
-        "Something went wrong while resetting password",
+      message: error.message || "Something went wrong while resetting password",
     });
   }
 };
 
 const getCurrentUser = async (req, res) => {
-  const {_id, username, name, email, bio, phone, avatar, friends, blockedUsers } = req.user;
+  const {
+    _id,
+    username,
+    name,
+    email,
+    bio,
+    phone,
+    avatar,
+    friends,
+    blockedUsers,
+  } = req.user;
 
-  const FriendsCount= friends ? friends.length : 0;
-  const BlockedUsersCount= blockedUsers ? blockedUsers.length : 0;
+  const FriendsCount = friends ? friends.length : 0;
+  const BlockedUsersCount = blockedUsers ? blockedUsers.length : 0;
   const avatarUrl = avatar?.url || null;
 
   return res.status(200).json({
     success: true,
-    data: { _id, username, name, email, bio, phone, avatar: avatarUrl, FriendsCount, BlockedUsersCount },
+    data: {
+      _id,
+      username,
+      name,
+      email,
+      bio,
+      phone,
+      avatar: avatarUrl,
+      FriendsCount,
+      BlockedUsersCount,
+    },
   });
 };
 
 const createProfile = async (req, res) => {
   try {
-    const {
-      name,
-      bio,
-      phone,
-    } = req.body;
+    const { name, bio, phone } = req.body;
 
     const user = await User.findById(req.user._id);
 
@@ -252,12 +246,9 @@ const createProfile = async (req, res) => {
 
     // Update avatar if uploaded
     if (req.file) {
-
       // Delete old avatar from Cloudinary
       if (user.avatar?.publicId) {
-         await cloudinary.uploader.destroy(
-          user.avatar.publicId
-        );
+        await cloudinary.uploader.destroy(user.avatar.publicId);
       }
 
       // Save new avatar details
@@ -320,9 +311,7 @@ const updateProfile = async (req, res) => {
 
     // Delete old avatar after successful DB update
     if (req.file && oldAvatarPublicId) {
-      const result = await cloudinary.uploader.destroy(
-        oldAvatarPublicId
-      );
+      const result = await cloudinary.uploader.destroy(oldAvatarPublicId);
     }
 
     const userObject = user.toObject();
@@ -343,10 +332,9 @@ const updateProfile = async (req, res) => {
   }
 };
 
-const deleteAvatar=async(req, res)=>{
+const deleteAvatar = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
-    
 
     if (!user) {
       return res.status(404).json({
@@ -382,11 +370,12 @@ const deleteAvatar=async(req, res)=>{
       success: true,
       message: "Avatar deleted successfully",
     });
-    
   } catch (error) {
-    res.status(500).json({success:false, message:"Failed to delete avatar"});
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to delete avatar" });
   }
-}
+};
 
 const checkUsername = async (req, res) => {
   try {
@@ -431,8 +420,7 @@ const getAllExistingUsers = async (req, res) => {
       message: "Failed to retrieve existing users",
     });
   }
-}
-
+};
 
 export {
   registerUser,
@@ -444,5 +432,5 @@ export {
   createProfile,
   updateProfile,
   checkUsername,
-  deleteAvatar
+  deleteAvatar,
 };
