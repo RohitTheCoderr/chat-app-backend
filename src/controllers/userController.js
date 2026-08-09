@@ -377,31 +377,81 @@ const deleteAvatar = async (req, res) => {
   }
 };
 
+// const checkUsername = async (req, res) => {
+//   try {
+//     const { username } = req.query;
+
+//     if (!username) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Username is required",
+//       });
+//     }
+
+//     const normalizedUsername = username.trim().toLowerCase();
+
+//     const user = await User.findOne({
+//       username: normalizedUsername,
+//     });
+
+//     const  available= !user,
+//     return res.status(200).json({
+//       success: true,
+//       message: `${user.username}Username is available`,
+//       data:available
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: "Failed to check username",
+//     });
+//   }
+// };
+
 const checkUsername = async (req, res) => {
   try {
     const { username } = req.query;
 
-    if (!username) {
+    if (!username || typeof username !== "string") {
       return res.status(400).json({
         success: false,
         message: "Username is required",
+        data: null,
       });
     }
 
     const normalizedUsername = username.trim().toLowerCase();
 
+    if (normalizedUsername.length < 3) {
+      return res.status(400).json({
+        success: false,
+        message: "Username must be at least 3 characters",
+        data: null,
+      });
+    }
+
     const user = await User.findOne({
       username: normalizedUsername,
-    });
+    }).select("_id");
+
+    const available = !user;
 
     return res.status(200).json({
       success: true,
-      available: !user,
+      message: available
+        ? "Username is available"
+        : "Username is already taken",
+      data: {
+        available,
+      },
     });
   } catch (error) {
+    console.error("Check username error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Failed to check username",
+      data: null,
     });
   }
 };

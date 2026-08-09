@@ -25,8 +25,14 @@ const createUser = async (userData) => {
     role: "USER",
   });
 
-  const userObject = user.toObject();
-  delete userObject.password;
+  // const userObject = user.toObject();
+  const userObject = {
+    userId: user._id,
+    name: user.name,
+    username: user.username,
+    email: user.email,
+  };
+  // delete userObject.password;
 
   return userObject;
 };
