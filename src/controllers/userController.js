@@ -472,6 +472,35 @@ const getAllExistingUsers = async (req, res) => {
   }
 };
 
+const getNonFriendUsers = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const friendIds = req.user.friends || [];
+
+    const users = await User.find(
+      {
+        _id: {
+          $nin: [userId, ...friendIds],
+        },
+      },
+      "username name avatar.url status",
+    );
+
+    // const users = await User.find({}, "username name avatar.url");
+
+    return res.status(200).json({
+      success: true,
+      data: users,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve existing users",
+      data: null,
+    });
+  }
+};
+
 export {
   registerUser,
   loginUser,
@@ -483,4 +512,5 @@ export {
   updateProfile,
   checkUsername,
   deleteAvatar,
+  getNonFriendUsers,
 };
