@@ -38,14 +38,15 @@ const createUser = async (userData) => {
 };
 
 const findUserByEmailOrUsername = async (
-  { email, username },
+  { identifier },
   includePassword = false,
 ) => {
-  const normalizedEmail = email?.trim().toLowerCase() || "";
-  const normalizedUsername = username?.trim().toLowerCase() || "";
+  const normalizedValue = identifier?.trim().toLowerCase() || "";
+
+  // const normalizedUsername = username?.trim().toLowerCase() || "";
 
   const query = User.findOne({
-    $or: [{ email: normalizedEmail }, { username: normalizedUsername }],
+    $or: [{ email: normalizedValue }, { username: normalizedValue }],
   });
 
   if (includePassword) {

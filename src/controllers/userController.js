@@ -23,27 +23,30 @@ const registerUser = async (req, res) => {
     return res.status(400).json({
       success: false,
       message: error.message,
+      data: null,
     });
   }
 };
 
 const loginUser = async (req, res) => {
   try {
-    const { email, username, password } = req.body;
+    const { identifier, password } = req.body;
 
-    if (!password || (!email && !username)) {
+    if (!password || !identifier) {
       return res.status(400).json({
         success: false,
         message: "Email or username and password are required",
+        data: null,
       });
     }
 
-    const user = await findUserByEmailOrUsername({ email, username }, true);
+    const user = await findUserByEmailOrUsername({ identifier }, true);
 
     if (!user) {
       return res.status(401).json({
         success: false,
         message: "Invalid credentials",
+        data: null,
       });
     }
 
@@ -53,44 +56,56 @@ const loginUser = async (req, res) => {
       return res.status(401).json({
         success: false,
         message: "Invalid credentials",
+        data: null,
       });
     }
 
     const token = generateToken(user._id);
-    const userObject = user.toObject();
-    delete userObject.password;
+    // const userObject = user.toObject();
+    // delete userObject.password;
+
+    const userObject = {
+      userId: user._id,
+      name: user.name,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar.url,
+    };
 
     return res.status(200).json({
       success: true,
       message: "Login successful",
-      token,
-      data: userObject,
+      data: { userData: userObject, token },
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
       message: error.message,
+      data: null,
     });
   }
 };
 
 const forgetPassword = async (req, res) => {
   try {
-    const { username, email } = req.body;
+    const { identifier } = req.body;
 
-    if (!username && !email) {
+    if (!identifier) {
       return res.status(400).json({
         success: false,
         message: "Username or email is required",
+        data: null,
       });
     }
 
-    const user = await findUserByEmailOrUsername({ username, email }, true);
+    const user = await findUserByEmailOrUsername({ identifier }, true);
 
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
+        data: null,
       });
     }
 
@@ -114,12 +129,14 @@ const forgetPassword = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Password reset link sent to your email",
+      data: null,
     });
   } catch (error) {
     console.error("Forget Password Error:", error);
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to process password reset request",
+      data: null,
     });
   }
 };
@@ -133,6 +150,7 @@ const resetPassword = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Reset token is required",
+        data: null,
       });
     }
 
@@ -140,6 +158,7 @@ const resetPassword = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "New password is required",
+        data: null,
       });
     }
 
@@ -158,6 +177,7 @@ const resetPassword = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Invalid or expired reset token",
+        data: null,
       });
     }
 
@@ -175,12 +195,14 @@ const resetPassword = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Password reset successfully",
+      data: null,
     });
   } catch (error) {
     console.error("Reset Password Error:", error);
     return res.status(500).json({
       success: false,
       message: error.message || "Something went wrong while resetting password",
+      data: null,
     });
   }
 };
@@ -228,6 +250,7 @@ const createProfile = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "User not found",
+        data: null,
       });
     }
 
@@ -274,6 +297,7 @@ const createProfile = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to create profile",
+      data: null,
     });
   }
 };
@@ -288,6 +312,7 @@ const updateProfile = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "User not found",
+        data: null,
       });
     }
 
@@ -328,6 +353,7 @@ const updateProfile = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to update profile",
+      data: null,
     });
   }
 };
@@ -340,6 +366,7 @@ const deleteAvatar = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "User not found",
+        data: null,
       });
     }
 
@@ -349,6 +376,7 @@ const deleteAvatar = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "No avatar to delete",
+        data: null,
       });
     }
 
@@ -359,6 +387,7 @@ const deleteAvatar = async (req, res) => {
       return res.status(500).json({
         success: false,
         message: "Failed to delete avatar from Cloudinary",
+        data: null,
       });
     }
 
@@ -369,6 +398,7 @@ const deleteAvatar = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Avatar deleted successfully",
+      data: null,
     });
   } catch (error) {
     res
@@ -376,37 +406,6 @@ const deleteAvatar = async (req, res) => {
       .json({ success: false, message: "Failed to delete avatar" });
   }
 };
-
-// const checkUsername = async (req, res) => {
-//   try {
-//     const { username } = req.query;
-
-//     if (!username) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Username is required",
-//       });
-//     }
-
-//     const normalizedUsername = username.trim().toLowerCase();
-
-//     const user = await User.findOne({
-//       username: normalizedUsername,
-//     });
-
-//     const  available= !user,
-//     return res.status(200).json({
-//       success: true,
-//       message: `${user.username}Username is available`,
-//       data:available
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       success: false,
-//       message: "Failed to check username",
-//     });
-//   }
-// };
 
 const checkUsername = async (req, res) => {
   try {
@@ -468,6 +467,7 @@ const getAllExistingUsers = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to retrieve existing users",
+      data: null,
     });
   }
 };
