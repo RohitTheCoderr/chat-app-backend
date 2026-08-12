@@ -117,9 +117,51 @@ const getFriendRequests = async (req, res) => {
     const friendRequests = await FriendRequest.find({
       receiver: userId,
       status: FRIEND_REQUEST_STATUS.PENDING,
-    }).populate("sender", "name email avatar.url");
+    }).populate("sender", "name username avatar.url status lastSeen");
 
-    res.status(200).json({ success: true, data: friendRequests });
+    const formattedFriendRes = friendRequests.map((friend) => ({
+      userId: friend._id,
+      name: friend.name,
+      username: friend.username,
+      avatar: friend.avatar,
+      avatar: friend.status,
+      avatar: friend.lastSeen,
+    }));
+    res.status(200).json({ success: true, data: formattedFriendRes });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to get friend requests",
+      error: error.message,
+    });
+  }
+};
+
+const getSendedFriendRequests = async (req, res) => {
+  try {
+    const userId = req?.user?._id;
+
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User ID is required" });
+    }
+
+    const sendFriendRequests = await FriendRequest.find({
+      sender: userId,
+      status: FRIEND_REQUEST_STATUS.PENDING,
+    }).populate("receiver", "name username avatar.url status lastSeen");
+
+    const formattedSendFriendRes = sendFriendRequests.map((friend) => ({
+      userId: friend._id,
+      name: friend.name,
+      username: friend.username,
+      avatar: friend.avatar,
+      avatar: friend.status,
+      avatar: friend.lastSeen,
+    }));
+
+    res.status(200).json({ success: true, data: formattedSendFriendRes });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -288,10 +330,92 @@ const cancelFriendRequest = async (req, res) => {
   }
 };
 
+const getNonFriendList = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const friendIds = req.user.friends || [];
+
+    console.log("friends", friendIds);
+
+    const users = await User.find(
+      {
+        _id: {
+          $nin: [userId, ...friendIds],
+        },
+      },
+      "username name avatar.url status lastSeen",
+    );
+
+    const formattedUsers = users.map((user) => ({
+      userId: user._id,
+      name: user.name,
+      username: user.username,
+      avatar: user.avatar,
+      status: user.status,
+      lastSeen: user.lastSeen,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      data: formattedUsers,
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: users,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve existing users",
+      data: null,
+    });
+  }
+};
+
+const getFriendList = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const friendIds = req.user.friends || [];
+
+    const users = await User.find(
+      {
+        _id: {
+          $in: friendIds,
+        },
+      },
+      "username name avatar.url status lastSeen",
+    );
+
+    const formattedUsers = users.map((user) => ({
+      userId: user._id,
+      name: user.name,
+      username: user.username,
+      avatar: user.avatar,
+      status: user.status,
+      lastSeen: user.lastSeen,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      data: formattedUsers,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve existing users",
+      data: null,
+    });
+  }
+};
+
 export {
   sendFriendRequest,
   getFriendRequests,
+  getSendedFriendRequests,
   acceptFriendRequest,
   declineFriendRequest,
   cancelFriendRequest,
+  getNonFriendList,
+  getFriendList,
 };
