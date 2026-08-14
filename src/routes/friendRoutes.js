@@ -16,9 +16,13 @@ const router = express.Router();
 router.post("/request/:userId", protect, sendFriendRequest);
 router.get("/requests", protect, getFriendRequests);
 router.get("/sended/requests", protect, getSendedFriendRequests);
-router.patch("/request/accept/:userId", protect, acceptFriendRequest);
-router.patch("/request/decline/:userId", protect, declineFriendRequest);
-router.delete("/request/cancel/:userId", protect, cancelFriendRequest);
+router.patch("/request/accept/:friendRequestId", protect, acceptFriendRequest);
+router.patch(
+  "/request/decline/:friendRequestId",
+  protect,
+  declineFriendRequest,
+);
+router.delete("/request/cancel/:friendRequestId", protect, cancelFriendRequest);
 router.get("/request/non-friends", protect, getNonFriendList);
 router.get("/request/friends", protect, getFriendList);
 
