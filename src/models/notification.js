@@ -17,7 +17,10 @@ const notificationSchema = new mongoose.Schema(
       enum: [
         "FRIEND_REQUEST",
         "FRIEND_REQUEST_ACCEPTED",
+        "FRIEND_REQUEST_DELETED",
+        "FRIEND_REQUEST_DECLINED",
         "NEW_MESSAGE",
+        "MESSAGE_REACTION",
         "MENTION",
       ],
       required: true,

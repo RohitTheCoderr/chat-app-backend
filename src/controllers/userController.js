@@ -70,7 +70,8 @@ const loginUser = async (req, res) => {
       username: user.username,
       email: user.email,
       role: user.role,
-      avatar: user.avatar.url,
+      avatar: user.avatar,
+      status: user.status,
     };
 
     return res.status(200).json({
