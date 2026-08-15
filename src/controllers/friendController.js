@@ -120,14 +120,17 @@ const getFriendRequests = async (req, res) => {
       status: FRIEND_REQUEST_STATUS.PENDING,
     }).populate("sender", "name username avatar.url status lastSeen");
 
-    const formattedFriendRes = friendRequests.map((friend) => ({
-      userId: friend._id,
-      name: friend.name,
-      username: friend.username,
-      avatar: friend.avatar,
-      avatar: friend.status,
-      avatar: friend.lastSeen,
+    const formattedFriendRes = friendRequests.map((friendRequest) => ({
+      userId: friendRequest.sender._id,
+      name: friendRequest.sender.name,
+      username: friendRequest.sender.username,
+      avatar: friendRequest.sender.avatar,
+      status: friendRequest.sender.status,
+      lastSeen: friendRequest.sender.lastSeen,
+      friendRequestStatus: "PENDING_RECEIVED",
+      friendRequestId: friendRequest._id,
     }));
+
     res.status(200).json({ success: true, data: formattedFriendRes });
   } catch (error) {
     res.status(500).json({
@@ -318,6 +321,7 @@ const acceptFriendRequest = async (req, res) => {
   }
 };
 
+// request receiver user can decline request
 const declineFriendRequest = async (req, res) => {
   try {
     const { friendRequestId } = req.params;
@@ -422,6 +426,7 @@ const declineFriendRequest = async (req, res) => {
 //   }
 // };
 
+// ################sender user can cancel requet
 const cancelFriendRequest = async (req, res) => {
   try {
     // const { userId } = req?.params;
