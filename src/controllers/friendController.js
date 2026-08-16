@@ -181,71 +181,6 @@ const getSendedFriendRequests = async (req, res) => {
   }
 };
 
-// const acceptFriendRequest = async (req, res) => {
-//   try {
-//     const { userId } = req.params;
-//     const receiverId = req.user._id;
-
-//     if (!userId) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "User ID is required" });
-//     }
-
-//     const friendRequest = await FriendRequest.findOne({
-//       sender: userId,
-//       receiver: receiverId,
-//       status: FRIEND_REQUEST_STATUS.PENDING,
-//     });
-
-//     if (!friendRequest) {
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "Friend request not found" });
-//     }
-
-//     friendRequest.status = FRIEND_REQUEST_STATUS.ACCEPTED;
-//     await friendRequest.save();
-
-//     // Add each other as friends
-//     await User.findByIdAndUpdate(userId, {
-//       $addToSet: { friends: receiverId },
-//     });
-//     await User.findByIdAndUpdate(receiverId, {
-//       $addToSet: { friends: userId },
-//     });
-
-//     const existingConversation = await Conversations.findOne({
-//       participants: { $all: [userId, receiverId] },
-//     });
-
-//     if (!existingConversation) {
-//       await Conversations.create({
-//         participants: [userId, receiverId],
-//       });
-//     }
-
-//     // notification in app Send notification
-//     await createNotification({
-//       recipientId: userId,
-//       type: NOTIFICATION_TYPES.FRIEND_REQUEST_ACCEPTED,
-//       message: `${req.user.name} accepted your friend request`,
-//       sender: req.user._id,
-//       referenceId: friendRequest._id,
-//     });
-
-//     res
-//       .status(200)
-//       .json({ success: true, message: "Friend request accepted successfully" });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to accept friend request",
-//       error: error.message,
-//     });
-//   }
-// };
-
 const acceptFriendRequest = async (req, res) => {
   try {
     const { friendRequestId } = req.params;
@@ -261,13 +196,19 @@ const acceptFriendRequest = async (req, res) => {
     const friendRequest = await FriendRequest.findOne({
       _id: friendRequestId,
       receiver: receiverId,
-      status: FRIEND_REQUEST_STATUS.PENDING,
     });
 
     if (!friendRequest) {
       return res.status(404).json({
         success: false,
         message: "Friend request not found",
+      });
+    }
+
+    if (friendRequest.status !== FRIEND_REQUEST_STATUS.PENDING) {
+      return res.status(409).json({
+        success: false,
+        message: `Friend request is already ${friendRequest.status.toLowerCase()}`,
       });
     }
 
@@ -338,14 +279,19 @@ const declineFriendRequest = async (req, res) => {
     const friendRequest = await FriendRequest.findOne({
       _id: friendRequestId,
       receiver: receiverId,
-      status: FRIEND_REQUEST_STATUS.PENDING,
     });
 
     if (!friendRequest) {
       return res.status(404).json({
         success: false,
         message: "Friend request not found",
-        data: null,
+      });
+    }
+
+    if (friendRequest.status !== FRIEND_REQUEST_STATUS.PENDING) {
+      return res.status(409).json({
+        success: false,
+        message: `Friend request is already ${friendRequest.status.toLowerCase()}`,
       });
     }
 
@@ -375,56 +321,6 @@ const declineFriendRequest = async (req, res) => {
     });
   }
 };
-
-// const declineFriendRequest = async (req, res) => {
-//   try {
-//     const { userId } = req?.params;
-//     const receiverId = req?.user?._id;
-
-//     if (!userId) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "User ID is required", data: null });
-//     }
-
-//     const friendRequest = await FriendRequest.findOne({
-//       sender: userId,
-//       receiver: receiverId,
-//       status: FRIEND_REQUEST_STATUS.PENDING,
-//     });
-
-//     if (!friendRequest) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Friend request not found",
-//         data: null,
-//       });
-//     }
-
-//     friendRequest.status = FRIEND_REQUEST_STATUS.DECLINED;
-//     await friendRequest.save();
-
-//     // notification in app
-//     await createNotification({
-//       recipientId: userId,
-//       type: NOTIFICATION_TYPES.FRIEND_REQUEST_DECLINED,
-//       message: `${req.user.name} declined your friend request`,
-//       sender: req.user._id,
-//       referenceId: friendRequest._id,
-//     });
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Friend request declined successfully",
-//       data: null,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to decline friend request",
-//     });
-//   }
-// };
 
 // ################sender user can cancel requet
 const cancelFriendRequest = async (req, res) => {

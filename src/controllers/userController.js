@@ -61,8 +61,6 @@ const loginUser = async (req, res) => {
     }
 
     const token = generateToken(user._id);
-    // const userObject = user.toObject();
-    // delete userObject.password;
 
     const userObject = {
       userId: user._id,
@@ -70,7 +68,9 @@ const loginUser = async (req, res) => {
       username: user.username,
       email: user.email,
       role: user.role,
-      avatar: user.avatar,
+      avatar: {
+        url: user.avatar?.url,
+      },
       status: user.status,
     };
 
@@ -219,22 +219,28 @@ const getCurrentUser = async (req, res) => {
     avatar,
     friends,
     blockedUsers,
+    status,
+    isVerified,
+    isActive,
   } = req.user;
 
   const FriendsCount = friends ? friends.length : 0;
   const BlockedUsersCount = blockedUsers ? blockedUsers.length : 0;
-  const avatarUrl = avatar?.url || null;
+  // const avatarUrl = avatar?.url || null;
 
   return res.status(200).json({
     success: true,
     data: {
-      _id,
+      userId: _id,
       username,
       name,
       email,
       bio,
       phone,
-      avatar: avatarUrl,
+      avatar,
+      status,
+      isVerified,
+      isActive,
       FriendsCount,
       BlockedUsersCount,
     },
@@ -284,13 +290,13 @@ const createProfile = async (req, res) => {
 
     await user.save();
 
-    const userObject = user.toObject();
-    delete userObject.password;
+    // const userObject = user.toObject();
+    // delete userObject.password;
 
     return res.status(200).json({
       success: true,
       message: "Profile created successfully",
-      data: userObject,
+      data: null,
     });
   } catch (error) {
     console.error("Create Profile Error:", error);
@@ -340,13 +346,13 @@ const updateProfile = async (req, res) => {
       const result = await cloudinary.uploader.destroy(oldAvatarPublicId);
     }
 
-    const userObject = user.toObject();
-    delete userObject.password;
+    // const userObject = user.toObject();
+    // delete userObject.password;
 
     return res.status(200).json({
       success: true,
       message: "Profile updated successfully",
-      data: userObject,
+      data: null,
     });
   } catch (error) {
     console.error("Update Profile Error:", error);

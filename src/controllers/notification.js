@@ -1,19 +1,97 @@
+import { NOTIFICATION_TYPES } from "../constants/notificationTypes.js";
+import FriendRequest from "../models/friendRequest.js";
 import Notification from "../models/notification.js";
 
+const getAllNotifications = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const notifications = await Notification.find({
+      recipient: userId,
+    })
+      .populate("sender", "username name avatar.url status")
+      .sort({ createdAt: -1 });
+
+    // const formattedNotifications = notifications.map((noti) => ({
+    //   sender: {
+    //     name: noti.sender?.name,
+    //     username: noti.sender?.username,
+    //     avatar: noti.sender?.avatar,
+    //     status: noti.sender?.status,
+    //   },
+    //   notificationId: noti._id,
+    //   receivingDate: noti.createdAt,
+    //   message: noti.message,
+    //   isRead: noti.isRead,
+    //   referenceId: noti.referenceId,
+    //   senderId: noti.sender?._id,
+    //   messageType: noti.type,
+    // }));
+
+    const formattedNotifications = await Promise.all(
+      notifications.map(async (noti) => {
+        let friendRequestStatus = null;
+
+        if (
+          noti.type === NOTIFICATION_TYPES.FRIEND_REQUEST &&
+          noti.referenceId
+        ) {
+          const friendRequest = await FriendRequest.findById(
+            noti.referenceId,
+          ).select("status");
+
+          friendRequestStatus = friendRequest?.status ?? "NOT_FOUND";
+        }
+
+        return {
+          sender: {
+            name: noti.sender?.name,
+            username: noti.sender?.username,
+            avatar: noti.sender?.avatar,
+            status: noti.sender?.status,
+          },
+
+          notificationId: noti._id,
+          receivingDate: noti.createdAt,
+          message: noti.message,
+          isRead: noti.isRead,
+          referenceId: noti.referenceId,
+          senderId: noti.sender?._id,
+          messageType: noti.type,
+
+          friendRequestStatus,
+        };
+      }),
+    );
+    return res.status(200).json({
+      success: true,
+      data: formattedNotifications,
+    });
+  } catch (error) {
+    console.error("Get notifications error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
 const getUnreadNotificationCountByType = async (req, res) => {
   try {
     const userId = req.user._id;
-    const Type = req.params.type; // Get the type from the request parameters like "FRIEND_REQUEST| MESSAGE| MENTION "
+    // const Type = req.params.type; // Get the type from the request parameters like "FRIEND_REQUEST| MESSAGE| MENTION "
 
     const count = await Notification.countDocuments({
       recipient: userId,
-      type: Type,
+      // type: Type,
       isRead: false,
     });
 
     res.status(200).json({ success: true, data: { count } });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error" });
+    res
+      .status(500)
+      .json({ success: false, message: "Server error", data: null });
   }
 };
 
@@ -26,7 +104,7 @@ const getUnreadNotificationsByType = async (req, res) => {
       recipient: userId,
       type: Type,
       isRead: false,
-    });
+    }).populate("sender", "username name avatar.url status lastSeen");
 
     res.status(200).json({ success: true, data: notifications });
   } catch (error) {
@@ -46,16 +124,22 @@ const markedReadNotificationsById = async (req, res) => {
     );
 
     if (!notification) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Notification not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Notification not found",
+        data: null,
+      });
     }
 
-    res
-      .status(200)
-      .json({ success: true, message: "Notification marked as read" });
+    res.status(200).json({
+      success: true,
+      message: "Notification marked as read",
+      data: null,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error" });
+    res
+      .status(500)
+      .json({ success: false, message: "Server error", data: null });
   }
 };
 
@@ -118,6 +202,7 @@ const deleteNotificationById = async (req, res) => {
 };
 
 export {
+  getAllNotifications,
   getUnreadNotificationsByType,
   getUnreadNotificationCountByType,
   markedReadNotificationsById,
