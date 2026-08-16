@@ -14,12 +14,27 @@ const app = express();
 // GLOBAL MIDDLEWARE
 // =========================
 
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  }),
-);
+// app.use(
+//   cors({
+//     origin: "http://localhost:5173",
+//     credentials: true,
+//   }),
+// );
+
+const corsOptions = {
+  origin: "http://localhost:5173",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+// =========================
+// GLOBAL MIDDLEWARE
+// =========================
+
+app.use(cors(corsOptions));
+
+// app.options("*", cors(corsOptions));
 
 app.use(express.json());
 

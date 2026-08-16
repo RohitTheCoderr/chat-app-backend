@@ -1,6 +1,7 @@
 import express from "express";
 import {
   deleteNotificationById,
+  getAllNotifications,
   getUnreadNotificationCountByType,
   getUnreadNotificationsByType,
   markedAllReadNotificationsByType,
@@ -10,34 +11,16 @@ import protect from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get(
-  "/notifications/:type/unread",
-  protect,
-  getUnreadNotificationsByType,
-);
+router.get("/", protect, getAllNotifications);
 
-router.get(
-  "/notifications/:type/unread-count",
-  protect,
-  getUnreadNotificationCountByType,
-);
+router.get("/unread/:type", protect, getUnreadNotificationsByType);
 
-router.patch(
-  "/notification/:notificationId/read",
-  protect,
-  markedReadNotificationsById,
-);
+router.get("/unread-count", protect, getUnreadNotificationCountByType);
 
-router.patch(
-  "/notifications/:type/all-read",
-  protect,
-  markedAllReadNotificationsByType,
-);
+router.patch("/read/:notificationId", protect, markedReadNotificationsById);
 
-router.delete(
-  "/notification/:notificationId/delete",
-  protect,
-  deleteNotificationById,
-);
+router.patch("/all-read/:type", protect, markedAllReadNotificationsByType);
+
+router.delete("/delete/:notificationId", protect, deleteNotificationById);
 
 export default router;
