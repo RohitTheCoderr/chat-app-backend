@@ -249,68 +249,6 @@ const getCurrentUser = async (req, res) => {
   });
 };
 
-const createProfile = async (req, res) => {
-  try {
-    const { name, bio, phone } = req.body;
-
-    const user = await User.findById(req.user._id);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-        data: null,
-      });
-    }
-
-    // Update profile information
-    if (name) {
-      user.name = name;
-    }
-
-    if (bio) {
-      user.bio = bio;
-    }
-
-    if (phone) {
-      user.phone = phone;
-    }
-
-    // Update avatar if uploaded
-    if (req.file) {
-      // Delete old avatar from Cloudinary
-      if (user.avatar?.publicId) {
-        await cloudinary.uploader.destroy(user.avatar.publicId);
-      }
-
-      // Save new avatar details
-      user.avatar = {
-        url: req.file.path,
-        publicId: req.file.filename,
-      };
-    }
-
-    await user.save();
-
-    // const userObject = user.toObject();
-    // delete userObject.password;
-
-    return res.status(200).json({
-      success: true,
-      message: "Profile created successfully",
-      data: null,
-    });
-  } catch (error) {
-    console.error("Create Profile Error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: error.message || "Failed to create profile",
-      data: null,
-    });
-  }
-};
-
 const updateProfile = async (req, res) => {
   try {
     const { name, bio, phone, username } = req.body;
@@ -325,16 +263,32 @@ const updateProfile = async (req, res) => {
       });
     }
 
-    // Store old avatar publicId before updating
     const oldAvatarPublicId = user.avatar?.publicId;
 
-    // Update only allowed fields
+    // Update profile fields
     if (name !== undefined) user.name = name;
     if (bio !== undefined) user.bio = bio;
     if (phone !== undefined) user.phone = phone;
-    if (username !== undefined) user.username = username;
 
-    // Update avatar if uploaded
+    // Update username only if changed
+    if (username !== undefined && username !== user.username) {
+      const existingUser = await User.findOne({
+        username,
+        _id: { $ne: user._id },
+      });
+
+      if (existingUser) {
+        return res.status(409).json({
+          success: false,
+          message: "Username is already taken",
+          data: null,
+        });
+      }
+
+      user.username = username;
+    }
+
+    // Update avatar
     if (req.file) {
       user.avatar = {
         url: req.file.path,
@@ -344,18 +298,21 @@ const updateProfile = async (req, res) => {
 
     await user.save();
 
-    // Delete old avatar after successful DB update
+    // Delete old avatar only after DB update succeeds
     if (req.file && oldAvatarPublicId) {
-      const result = await cloudinary.uploader.destroy(oldAvatarPublicId);
+      await cloudinary.uploader.destroy(oldAvatarPublicId);
     }
-
-    // const userObject = user.toObject();
-    // delete userObject.password;
 
     return res.status(200).json({
       success: true,
       message: "Profile updated successfully",
-      data: null,
+      data: {
+        name: user.name,
+        username: user.username,
+        bio: user.bio,
+        phone: user.phone,
+        avatar: user.avatar,
+      },
     });
   } catch (error) {
     console.error("Update Profile Error:", error);
@@ -489,7 +446,6 @@ export {
   resetPassword,
   getCurrentUser,
   getAllExistingUsers,
-  createProfile,
   updateProfile,
   checkUsername,
   deleteAvatar,
