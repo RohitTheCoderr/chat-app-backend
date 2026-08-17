@@ -222,6 +222,7 @@ const getCurrentUser = async (req, res) => {
     status,
     isVerified,
     isActive,
+    lastSeen,
   } = req.user;
 
   const FriendsCount = friends ? friends.length : 0;
@@ -243,6 +244,7 @@ const getCurrentUser = async (req, res) => {
       isActive,
       FriendsCount,
       BlockedUsersCount,
+      lastSeen,
     },
   });
 };
@@ -311,7 +313,7 @@ const createProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const { name, bio, phone } = req.body;
+    const { name, bio, phone, username } = req.body;
 
     const user = await User.findById(req.user._id);
 
@@ -330,6 +332,7 @@ const updateProfile = async (req, res) => {
     if (name !== undefined) user.name = name;
     if (bio !== undefined) user.bio = bio;
     if (phone !== undefined) user.phone = phone;
+    if (username !== undefined) user.username = username;
 
     // Update avatar if uploaded
     if (req.file) {
