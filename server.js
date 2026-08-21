@@ -5,6 +5,7 @@ import { Server } from "socket.io";
 import { initSocket } from "./src/sockets/socket.js";
 
 const PORT = process.env.PORT || 5000;
+const FRONTEND = process.env.FRONTEND_URL;
 
 const startServer = async () => {
   try {
@@ -14,11 +15,8 @@ const startServer = async () => {
 
     const io = new Server(server, {
       cors: {
-        origin: "http://localhost:5173",
+        origin: FRONTEND,
         credentials: true,
-
-        // methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        // allowedHeaders: ["Content-Type", "Authorization"],
       },
     });
 

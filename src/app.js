@@ -10,20 +10,16 @@ import sessionRoutes from "./routes/sessionRoutes.js"
 
 const app = express();
 
+
+const FRONTEND = process.env.FRONTEND_URL;
+
 // =========================
 
 // GLOBAL MIDDLEWARE
 // =========================
 
-// app.use(
-//   cors({
-//     origin: "http://localhost:5173",
-//     credentials: true,
-//   }),
-// );
-
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: FRONTEND,
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
