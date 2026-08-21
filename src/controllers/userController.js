@@ -9,6 +9,8 @@ import { cloudinary } from "../services/cloudinaryService.js";
 import { sendPasswordResetEmail } from "../services/emailService.js";
 import crypto from "crypto";
 import { hashPassword } from "../services/passwordService.js";
+import Sessions from "../models/sessionModel.js";
+import {UAParser} from "ua-parser-js";
 
 const registerUser = async (req, res) => {
   try {
@@ -60,7 +62,28 @@ const loginUser = async (req, res) => {
       });
     }
 
-    const token = generateToken(user._id);
+    const parser = new UAParser(req.headers["user-agent"]);
+
+const device = parser.getDevice();
+const browser = parser.getBrowser();
+const os = parser.getOS();
+
+    const sessionId = crypto.randomUUID();
+
+await Sessions.create({
+  user: user._id,
+  sessionId,
+
+  device: device.model || device.type || "Desktop",
+  browser: browser.name || "Unknown",
+  os: os.name || "Unknown",
+
+  ipAddress: req.ip,
+  userAgent: req.headers["user-agent"],
+  lastActive: new Date(),
+});
+
+    const token = generateToken(user._id, sessionId);
 
     const userObject = {
       userId: user._id,
@@ -80,6 +103,7 @@ const loginUser = async (req, res) => {
       data: { userData: userObject, token },
     });
   } catch (error) {
+    console.log("errrror", error)
     return res.status(500).json({
       success: false,
       message: error.message,

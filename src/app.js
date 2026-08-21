@@ -6,6 +6,7 @@ import friendRoutes from "./routes/friendRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import conversationRoutes from "./routes/conversationRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
+import sessionRoutes from "./routes/sessionRoutes.js"
 
 const app = express();
 
@@ -43,6 +44,7 @@ app.use(express.json());
 // =========================
 
 app.use("/api/auth", authRoutes);
+app.use("/api/sessions", sessionRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/friends", friendRoutes);
 app.use("/api/notifications", notificationRoutes);

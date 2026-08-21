@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
+import Sessions from "../models/sessionModel.js";
 
 const protect = async (req, res, next) => {
   try {
@@ -24,6 +25,28 @@ const protect = async (req, res, next) => {
         message: "User not found",
       });
     }
+
+      // Check session
+    const session = await Sessions.findOne({
+      sessionId: decoded.sessionId,
+      user: decoded.userId,
+    });
+
+    if (!session) {
+      return res.status(401).json({
+        success: false,
+        message: "Session expired or revoked",
+      });
+    }
+
+    // Update last active
+    session.lastActive = new Date();
+    await session.save();
+
+    req.user = user;
+
+    // Current session id
+    req.sessionId = decoded.sessionId;
 
     req.user = user;
 
