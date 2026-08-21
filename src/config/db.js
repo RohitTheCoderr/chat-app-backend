@@ -14,6 +14,9 @@ const connectDB = async () => {
       autoIndex: true,
     });
 
+      console.log(`MongoDB connected: ${mongoose.connection.host}`);
+    console.log(`Database name: ${mongoose.connection.name}`);
+
     console.log(`MongoDB connected: ${mongoose.connection.host}`);
   } catch (error) {
     console.error("MongoDB connection failed:", error.message);
