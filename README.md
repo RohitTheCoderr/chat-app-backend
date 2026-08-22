@@ -1,5 +1,7 @@
 # Chat App Backend
 
+VITE_API_BASE_URL=https://nexora-chat-backend.onrender.com
+
 Backend for a real-time chat application built with **Node.js, Express.js, MongoDB, Socket.IO, and JWT authentication**.
 
 The project is designed to support real-time messaging, user authentication, user profiles, media/file sharing, and email-based services.
