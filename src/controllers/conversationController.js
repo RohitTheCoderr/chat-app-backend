@@ -11,6 +11,7 @@ const getAllConversationsForUser = async (req, res) => {
     const [conversations, total] = await Promise.all([
       Conversations.find({ participants: userId })
         .populate("participants", "name username avatar.url status")
+        .populate("lastMessage", "text _id messageType createdAt")
         .sort({ updatedAt: -1 })
         .skip(skip)
         .limit(size),
@@ -27,14 +28,16 @@ const getAllConversationsForUser = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Conversations fetched successfully based on your filter",
-      data: formattedConversations,
-      pagination: {
-        page,
-        size,
-        totalItems: total,
-        totalPages: Math.ceil(total / size),
-        hasNextPage: page * size < total,
-        hasPreviousPage: page > 1,
+      data: {
+        Conversations: formattedConversations,
+        pagination: {
+          page,
+          size,
+          totalItems: total,
+          totalPages: Math.ceil(total / size),
+          hasNextPage: page * size < total,
+          hasPreviousPage: page > 1,
+        },
       },
     });
   } catch (error) {
