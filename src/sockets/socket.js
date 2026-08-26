@@ -74,6 +74,10 @@ export const initSocket = (io) => {
       try {
         const { conversationId, text } = data;
 
+        if (!conversationId || !text?.trim()) {
+          return socket.emit("error", "Conversation and message text are required");
+        }
+
         const conversation = await Conversations.findOne({
           _id: conversationId,
           participants: socket.userId,
@@ -90,8 +94,14 @@ export const initSocket = (io) => {
 
           sender: socket.userId,
 
-          text: text,
+          text: text.trim(),
+          messageType: "TEXT",
+          readBy: [socket.userId],
         });
+
+        conversation.lastMessage = message._id;
+        conversation.lastMessageAt = message.createdAt;
+        await conversation.save();
 
         const populatedMessage = await Message.findById(message._id).populate(
           "sender",
