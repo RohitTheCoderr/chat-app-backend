@@ -467,13 +467,9 @@ const getFriendProfileById = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    console.log("_id", userId);
-
     const user = await User.findById(userId).select(
       "_id name username avatar.url bio status lastSeen createdAt email phone isVerified friends",
     );
-
-    console.log("user", user);
 
     const userData = {
       userId: user._id,
