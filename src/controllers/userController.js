@@ -10,7 +10,7 @@ import { sendPasswordResetEmail } from "../services/emailService.js";
 import crypto from "crypto";
 import { hashPassword } from "../services/passwordService.js";
 import Sessions from "../models/sessionModel.js";
-import {UAParser} from "ua-parser-js";
+import { UAParser } from "ua-parser-js";
 
 const registerUser = async (req, res) => {
   try {
@@ -64,24 +64,24 @@ const loginUser = async (req, res) => {
 
     const parser = new UAParser(req.headers["user-agent"]);
 
-const device = parser.getDevice();
-const browser = parser.getBrowser();
-const os = parser.getOS();
+    const device = parser.getDevice();
+    const browser = parser.getBrowser();
+    const os = parser.getOS();
 
     const sessionId = crypto.randomUUID();
 
-await Sessions.create({
-  user: user._id,
-  sessionId,
+    await Sessions.create({
+      user: user._id,
+      sessionId,
 
-  device: device.model || device.type || "Desktop",
-  browser: browser.name || "Unknown",
-  os: os.name || "Unknown",
+      device: device.model || device.type || "Desktop",
+      browser: browser.name || "Unknown",
+      os: os.name || "Unknown",
 
-  ipAddress: req.ip,
-  userAgent: req.headers["user-agent"],
-  lastActive: new Date(),
-});
+      ipAddress: req.ip,
+      userAgent: req.headers["user-agent"],
+      lastActive: new Date(),
+    });
 
     const token = generateToken(user._id, sessionId);
 
@@ -103,7 +103,7 @@ await Sessions.create({
       data: { userData: userObject, token },
     });
   } catch (error) {
-    console.log("errrror", error)
+    console.log("errrror", error);
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -463,6 +463,57 @@ const getAllExistingUsers = async (req, res) => {
   }
 };
 
+const getFriendProfileById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    console.log("_id", userId);
+
+    const user = await User.findById(userId).select(
+      "_id name username avatar.url bio status lastSeen createdAt email phone isVerified friends",
+    );
+
+    console.log("user", user);
+
+    const userData = {
+      userId: user._id,
+      name: user.name,
+      username: user.username,
+      email: user.email,
+      phone: user.phone,
+      avatar: user.avatar,
+      bio: user.bio,
+      status: user.status,
+      lastSeen: user.lastSeen,
+      createdAt: user.createdAt,
+      isVerified: user.isVerified,
+      friendsCount: user.friends?.length ?? 0,
+    };
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+        data: null,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "User fetched successfully",
+      data: user,
+    });
+  } catch (error) {
+    console.error("Get user by ID error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch user",
+      data: null,
+    });
+  }
+};
+
 export {
   registerUser,
   loginUser,
@@ -473,4 +524,5 @@ export {
   updateProfile,
   checkUsername,
   deleteAvatar,
+  getFriendProfileById,
 };
